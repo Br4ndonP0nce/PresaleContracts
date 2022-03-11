@@ -1,0 +1,253 @@
+{
+	"compiler": {
+		"version": "0.8.6+commit.11564f7e"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "previousOwner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferred",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address payable",
+						"name": "masterDevAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "contract IERC20",
+						"name": "tokenAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "tokenPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "contract IUniswapV2Router02",
+						"name": "_routerAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "address payable",
+						"name": "_idoAdmin",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_maxAmount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_tokenDecimals",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_softcap",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_hardcap",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_liquidityToLock",
+						"type": "uint256"
+					}
+				],
+				"name": "deployNewInstance",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "existingContracts",
+				"outputs": [
+					{
+						"internalType": "contract IgniteIDO",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_index",
+						"type": "uint256"
+					}
+				],
+				"name": "presaleAtIndex",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "presalesLength",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "renounceOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address payable",
+						"name": "newAddress",
+						"type": "address"
+					}
+				],
+				"name": "updateFeeAddress",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "withdrawFees",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {
+				"owner()": {
+					"details": "Returns the address of the current owner."
+				},
+				"renounceOwnership()": {
+					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+				},
+				"transferOwnership(address)": {
+					"details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+				}
+			},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"presaleDeployer.sol": "mainFactory"
+		},
+		"evmVersion": "berlin",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"IDOcontract.sol": {
+			"keccak256": "0xea8e24c4d46fa5ea94d6aad14e12b367a23413043dee9faa5ca8d2318be2bd51",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://b89a1c92af0063de3599fba57f006465fa2b387a73c3e058104f77c9c04403c0",
+				"dweb:/ipfs/QmdRRHaTWQHzPYFpGhEJqLt6yv2ttvUURQvUqU6EEwapJa"
+			]
+		},
+		"enumerableSet.sol": {
+			"keccak256": "0x84f5e8676d4cfaba68266cec63cae9353baeb0ef9cd2c3a0f912880905c0f60a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://d6006efc8f205ecefb6f93095d82ee145c5b22058fb3cfb6356a70ffe80594c4",
+				"dweb:/ipfs/QmQDGRqtSZP8Hb8WauXgosYKNQJwkTn5hEzEMskTj6vd8U"
+			]
+		},
+		"presaleDeployer.sol": {
+			"keccak256": "0xe8b387a47bb6430dffacd7334a86347f35bee6caebea9bd2132455d079b642e5",
+			"license": "Unlicensed",
+			"urls": [
+				"bzz-raw://ccb9dcb32c42b2a605045465bd003781d7001cd8e688f6de4b54c1f33f0c254b",
+				"dweb:/ipfs/QmRaikfSjE6QAQw2LN928Qx2m1bwL4wiSipGqRYTPS6qUJ"
+			]
+		}
+	},
+	"version": 1
+}
