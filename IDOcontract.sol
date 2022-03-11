@@ -420,6 +420,16 @@ contract IgniteIDO is Ownable, ReentrancyGuard {
         uint256 _whitelistEndBlock;
         uint256 _paidSpots;
         bool vetted;
+       
+
+    }
+    struct presaleInfo3{
+        string _discord;
+        string _twitter;
+        string _telegram;
+        string _website;
+        string _imageURL;
+        string _description;
 
     }
    
@@ -435,6 +445,7 @@ contract IgniteIDO is Ownable, ReentrancyGuard {
     address payable masterIgniteDev;
     presaleInfo public _presaleInfo;
     presaleInfo2 public _presaleInfo2;
+    presaleInfo3 public _presaleInfo3;
     uint256 _phase;
     uint256 currentWhitelistUsers=0;
     uint256 gweiCollected= 0;
@@ -485,7 +496,8 @@ contract IgniteIDO is Ownable, ReentrancyGuard {
         bool _whitelist,
         uint256 _whitelistStartBlock,
         uint256 _whitelistEndBlock,
-        bool _isVetted
+        bool _isVetted,
+        string memory description
         )external onlyPresaleOwner{
         _presaleInfo2._paidSpots=_paidSpots;
         _presaleInfo2._startBlock=_startBlock;
@@ -494,7 +506,63 @@ contract IgniteIDO is Ownable, ReentrancyGuard {
         _presaleInfo2._whitelistStartBlock=_whitelistStartBlock;
         _presaleInfo2._whitelistEndBlock=_whitelistEndBlock;
         _presaleInfo2.vetted = _isVetted;
+        _presaleInfo3._description = description;
         }
+         function presaleInit3(
+        string memory _discord,
+        string memory _twitter,
+        string memory _telegram,
+        string memory _website,
+        string memory _imageURL,
+        string memory description
+        )external onlyPresaleOwner{
+            _presaleInfo3._discord = _discord;
+            _presaleInfo3._twitter = _twitter;
+            _presaleInfo3._telegram = _telegram;
+            _presaleInfo3._website = _website;
+            _presaleInfo3._imageURL = _imageURL;
+            _presaleInfo3._description = description;
+        }
+        //Socials update and description
+        function updateDescription(string memory description) public onlyPresaleOwner{
+            _presaleInfo3._description=description;
+        }
+          function updateTwitterHandle(string memory twitter) public onlyPresaleOwner{
+            _presaleInfo3._twitter=twitter;
+        }
+          function updateDiscordHandle(string memory discord) public onlyPresaleOwner{
+            _presaleInfo3._discord=discord;
+        }
+          function updateTelegramHandle(string memory telegram) public onlyPresaleOwner{
+            _presaleInfo3._telegram=telegram;
+        }
+          function updateWebsiteHandle(string memory website) public onlyPresaleOwner{
+            _presaleInfo3._website=website;
+        }
+          function updateImageHandle(string memory image) public onlyPresaleOwner{
+            _presaleInfo3._imageURL=image;
+        }
+
+        //public views
+         function Description() public view returns(string memory){
+            return _presaleInfo3._description;
+        }
+          function TwitterHandle() public view returns(string memory) {
+            return _presaleInfo3._twitter;
+        }
+          function DiscordHandle() public view returns(string memory) {
+            return _presaleInfo3._discord;
+        }
+          function TelegramHandle() public view returns(string memory) {
+            return _presaleInfo3._telegram;
+        }
+          function WebsiteHandle() public view returns(string memory) {
+           return  _presaleInfo3._website;
+        }
+          function ImageHandle() public view returns(string memory) {
+           return  _presaleInfo3._imageURL;
+        }
+
     function updatePublicSaletime(uint256 newStartTimestamp,uint256 newEndTimestamp) public onlyPresaleOwner{
             _presaleInfo2._startBlock = newStartTimestamp;
             _presaleInfo2._endBlock = newEndTimestamp;

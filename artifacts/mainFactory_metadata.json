@@ -225,11 +225,11 @@
 	},
 	"sources": {
 		"IDOcontract.sol": {
-			"keccak256": "0xea8e24c4d46fa5ea94d6aad14e12b367a23413043dee9faa5ca8d2318be2bd51",
+			"keccak256": "0xf2c13c1887c07e3405939dea464d4d83445a202baadb499925a4df64030dde22",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://b89a1c92af0063de3599fba57f006465fa2b387a73c3e058104f77c9c04403c0",
-				"dweb:/ipfs/QmdRRHaTWQHzPYFpGhEJqLt6yv2ttvUURQvUqU6EEwapJa"
+				"bzz-raw://9a730a7dca4587a2e90ef140562085efb09a6915b7cd9705c5211b05e0db1fe2",
+				"dweb:/ipfs/QmPN2VWbP6afPALLbH7N33LRaCBFDzQaQXDfBZxeJ1psy8"
 			]
 		},
 		"enumerableSet.sol": {
