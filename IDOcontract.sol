@@ -327,12 +327,12 @@ contract IgniteIDO is ReentrancyGuard {
 
     }
     struct presaleInfo3{
-        string _discord;
-        string _twitter;
-        string _telegram;
-        string _website;
-        string _imageURL;
-        string _description;
+        bytes32 _discord;
+        bytes32 _twitter;
+        bytes32 _telegram;
+        bytes32 _website;
+        bytes32 _imageURL;
+        bytes32 _description;
 
     }
    
@@ -399,8 +399,8 @@ contract IgniteIDO is ReentrancyGuard {
         bool _whitelist,
         uint256 _whitelistStartBlock,
         uint256 _whitelistEndBlock,
-        bool _isVetted,
-        string memory description
+        bool _isVetted
+       
         )external onlyPresaleOwner{
         _presaleInfo2._paidSpots=_paidSpots;
         _presaleInfo2._startBlock=_startBlock;
@@ -409,15 +409,15 @@ contract IgniteIDO is ReentrancyGuard {
         _presaleInfo2._whitelistStartBlock=_whitelistStartBlock;
         _presaleInfo2._whitelistEndBlock=_whitelistEndBlock;
         _presaleInfo2.vetted = _isVetted;
-        _presaleInfo3._description = description;
+        
         }
          function presaleInit3(
-        string memory _discord,
-        string memory _twitter,
-        string memory _telegram,
-        string memory _website,
-        string memory _imageURL,
-        string memory description
+        bytes32  _discord,
+        bytes32  _twitter,
+        bytes32  _telegram,
+        bytes32  _website,
+        bytes32  _imageURL,
+        bytes32  description
         )external onlyPresaleOwner{
             _presaleInfo3._discord = _discord;
             _presaleInfo3._twitter = _twitter;
@@ -427,42 +427,42 @@ contract IgniteIDO is ReentrancyGuard {
             _presaleInfo3._description = description;
         }
         //Socials update and description
-        function updateDescription(string memory description) public onlyPresaleOwner{
-            _presaleInfo3._description=description;
+        function updateDescription(bytes32 description) public onlyPresaleOwner{
+            _presaleInfo3._description= description;
         }
-          function updateTwitterHandle(string memory twitter) public onlyPresaleOwner{
+          function updateTwitterHandle(bytes32 twitter) public onlyPresaleOwner{
             _presaleInfo3._twitter=twitter;
         }
-          function updateDiscordHandle(string memory discord) public onlyPresaleOwner{
+          function updateDiscordHandle(bytes32 discord) public onlyPresaleOwner{
             _presaleInfo3._discord=discord;
         }
-          function updateTelegramHandle(string memory telegram) public onlyPresaleOwner{
+          function updateTelegramHandle(bytes32 telegram) public onlyPresaleOwner{
             _presaleInfo3._telegram=telegram;
         }
-          function updateWebsiteHandle(string memory website) public onlyPresaleOwner{
+          function updateWebsiteHandle(bytes32 website) public onlyPresaleOwner{
             _presaleInfo3._website=website;
         }
-          function updateImageHandle(string memory image) public onlyPresaleOwner{
+          function updateImageHandle(bytes32 image) public onlyPresaleOwner{
             _presaleInfo3._imageURL=image;
         }
 
         //public views
-         function Description() public view returns(string memory){
+         function Description() public view returns(bytes32){
             return _presaleInfo3._description;
         }
-          function TwitterHandle() public view returns(string memory) {
+          function TwitterHandle() public view returns(bytes32) {
             return _presaleInfo3._twitter;
         }
-          function DiscordHandle() public view returns(string memory) {
+          function DiscordHandle() public view returns(bytes32) {
             return _presaleInfo3._discord;
         }
-          function TelegramHandle() public view returns(string memory) {
+          function TelegramHandle() public view returns(bytes32) {
             return _presaleInfo3._telegram;
         }
-          function WebsiteHandle() public view returns(string memory) {
+          function WebsiteHandle() public view returns(bytes32) {
            return  _presaleInfo3._website;
         }
-          function ImageHandle() public view returns(string memory) {
+          function ImageHandle() public view returns(bytes32) {
            return  _presaleInfo3._imageURL;
         }
 
