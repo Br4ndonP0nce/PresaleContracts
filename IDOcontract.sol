@@ -296,6 +296,28 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
     ) external;
 }
 
+pragma solidity ^0.8.0;
+
+interface Factory {
+  function addIgniteStaffWallet ( address _igniteStaffWallet ) external;
+  function deployNewInstance ( address tokenAddress, uint256 tokenPrice, address _routerAddress, address _idoAdmin, uint256 _maxAmount, uint256 _tokenDecimals, uint256 _softcap, uint256 _hardcap, uint256 _liquidityToLock ) external;
+  function removeIgniteStaffWallet ( address _igniteStaffWallet ) external;
+  function renounceOwnership (  ) external;
+  function transferOwnership ( address newOwner ) external;
+  function updateFeeAddress ( address newAddress ) external;
+  function updateFeeForDeployment ( uint256 newFee ) external;
+  function withdrawFees (  ) external;
+  function existingContracts ( uint256 ) external view returns ( address );
+  function getFeeAddress (  ) external view returns ( address );
+  function igniteStaffAtIndex ( uint256 _index ) external view returns ( address );
+  function igniteStaffContainsWallet ( address _wallet ) external view returns ( bool );
+  function igniteStaffLength (  ) external view returns ( uint256 );
+  function owner (  ) external view returns ( address );
+  function presaleAtIndex ( uint256 _index ) external view returns ( address );
+  function presalesLength (  ) external view returns ( uint256 );
+  function seeFees (  ) external view returns ( uint256 );
+}
+
 
 pragma solidity ^0.8.0;
 
@@ -464,6 +486,7 @@ contract IgniteIDO is ReentrancyGuard {
 
     function isStaff(address _wallet) external returns (bool){
         // check if valid ignite staff address in presale deployer contract variable
+        return Factory(factoryAddress).igniteStaffContainsWallet(_wallet);
     }
 
     function cancelSale() public onlyPresaleOwner {
@@ -517,6 +540,10 @@ contract IgniteIDO is ReentrancyGuard {
     }
     function returnWhitelistUsers()public view returns(uint256){
         return currentWhitelistUsers;
+    }
+
+    function getFactoryAddress()public view returns(address){
+        return factoryAddress;
     }
     function userDepositsWhitelist()public payable nonReentrant{//Phase =1 whitelist phase
     require(_presaleInfo2._whitelist,"not a whitelisted sale");
