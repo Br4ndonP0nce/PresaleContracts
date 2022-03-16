@@ -298,7 +298,6 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
 interface Factory {
   function addIgniteStaffWallet ( address _igniteStaffWallet ) external;
   function deployNewInstance ( address tokenAddress, uint256 tokenPrice, address _routerAddress, address _idoAdmin, uint256 _maxAmount, uint256 _tokenDecimals, uint256 _softcap, uint256 _hardcap, uint256 _liquidityToLock ) external;
-  function existingContracts ( uint256 ) external view returns ( address );
   function getFeeAddress (  ) external view returns ( address );
   function igniteStaffAtIndex ( uint256 _index ) external view returns ( address );
   function igniteStaffContainsWallet ( address _wallet ) external view returns ( bool );
@@ -308,14 +307,16 @@ interface Factory {
   function presalesLength (  ) external view returns ( uint256 );
   function removeIgniteStaffWallet ( address _igniteStaffWallet ) external;
   function renounceOwnership (  ) external;
-  function seeBNBFeesForBuy (  ) external view returns ( uint256 );
-  function seeBNBFeesForDeployment (  ) external view returns ( uint256 );
+  function seeFeeForBuy (  ) external view returns ( uint256 );
+  function seeFeeForDeployment (  ) external view returns ( uint256 );
   function transferOwnership ( address newOwner ) external;
-  function updateBNBFeeForBuy ( uint256 newFee ) external;
-  function updateBNBFeeForDeployment ( uint256 newFee ) external;
   function updateFeeAddress ( address newAddress ) external;
+  function updateFeeForBuy ( uint256 newFee ) external;
+  function updateFeeForDeployment ( uint256 newFee ) external;
   function withdrawFees (  ) external;
 }
+
+
 
 
 pragma solidity ^0.8.0;
@@ -451,27 +452,15 @@ contract IgniteIDO is ReentrancyGuard {
             _presaleInfo3._imageURL = _imageURL;
             _presaleInfo3._description = description;
         }
-
-        //public views
-         function Description() public view returns(bytes32){
-            return _presaleInfo3._description;
-        }
-          function TwitterHandle() public view returns(bytes32) {
-            return _presaleInfo3._twitter;
-        }
-          function DiscordHandle() public view returns(bytes32) {
-            return _presaleInfo3._discord;
-        }
-          function TelegramHandle() public view returns(bytes32) {
-            return _presaleInfo3._telegram;
-        }
-          function WebsiteHandle() public view returns(bytes32) {
-           return  _presaleInfo3._website;
-        }
-          function ImageHandle() public view returns(bytes32) {
-           return  _presaleInfo3._imageURL;
-        }
-        
+    function _presaleInfo4(address wallet) public view returns(uint256, uint256, uint256, bool, uint256, uint256){
+        BuyersData storage buyer = Buyers[msg.sender];
+        uint256 tokensOwed = buyer.owedTokens;
+        uint256 contribution = buyer.contribution;
+        bool whitelist = isWhitelisted[wallet];
+        uint256 remainingTokensInContract = _presaleInfo._tokenAddress.balanceOf(address(this));
+        uint256 totalAmountFunded = gweiCollected;
+        return (_phase, tokensOwed, contribution, whitelist, remainingTokensInContract, totalAmountFunded);
+    } 
     
     function updatePublicSaletime(uint256 newStartTimestamp,uint256 newEndTimestamp) public onlyPresaleOwner{
         require(block.number <= newStartTimestamp, "Start time can't be in the past");
@@ -496,6 +485,10 @@ contract IgniteIDO is ReentrancyGuard {
     function isStaff(address _wallet) external returns (bool){
         // check if valid ignite staff address in presale deployer contract variable
         return Factory(factoryAddress).igniteStaffContainsWallet(_wallet);
+    }
+
+    function getbuyFee() external returns (uint256){
+        return Factory(factoryAddress).seeFeeForBuy();
     }
 
     function cancelSale() public onlyPresaleOwner {
@@ -561,6 +554,7 @@ contract IgniteIDO is ReentrancyGuard {
     require(isWhitelisted[msg.sender],"Not whitelisted");
     require(msg.value<=_presaleInfo._maxAmount,"Contribution needs to be in the minimum buy/max buy range");
     require(address(this).balance + msg.value<=_presaleInfo._hardcap);
+    require(msg.value >= this.getbuyFee(),"NOT ENOUGH FEE");
     BuyersData storage _contributionInfo = Buyers[msg.sender];
     uint256 amount_in = msg.value;
     uint256 tokensSold = amount_in * _presaleInfo._tokenPrice;
@@ -576,6 +570,7 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
     //require(_phase==2,"Not on public _phase yet");
     require(msg.value<=_presaleInfo._maxAmount,"Contribution needs to be in the minimum buy/max buy range");
     require(address(this).balance + msg.value<=_presaleInfo._maxAmount);
+    require(msg.value >= this.getbuyFee(),"NOT ENOUGH FEE");
     BuyersData storage _contributionInfo = Buyers[msg.sender];
     uint256 amount_in = msg.value;
     uint256 tokensSold = amount_in * _presaleInfo._tokenPrice;
@@ -585,25 +580,11 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
     gweiCollected += amount_in;
     
 }
-
     
   function _returnContributors() public view returns(uint256){
       return contributorNumber;
   }
-  function checkContribution(address contributor) public view returns(uint256){
-      BuyersData storage _contributionInfo = Buyers[contributor];
-      return _contributionInfo.contribution;
-  }
-
-    function _remainingContractTokens() public view returns (uint256) {
-        return _presaleInfo._tokenAddress.balanceOf(address(this));
-    }
-    function returnTotalAmountFunded() public view returns (uint256){
-        return gweiCollected;
-    }
-    function returnContractAddress() public view returns (address){
-        return address(_presaleInfo._tokenAddress);
-    }
+ 
 
     function updateContractAddressMaster(IERC20 newToken)public {
         require(this.isStaff(msg.sender));
@@ -615,22 +596,6 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
         _presaleInfo._tokenAddress = IERC20(newToken);
     }
 
-    function _returnPhase() public view returns (uint256) {
-        return _phase;
-    }
-
-    function returnHardCap() public view returns(uint256){
-        return _presaleInfo._hardcap;
-    }
-      function returnSoftCap() public view returns(uint256){
-        return _presaleInfo._softcap;
-    }
-    function returnVetted () public view returns(bool){
-        return _presaleInfo2.vetted;
-    }
-    function returnRemainingTokensInContract() public view returns(uint256){
-        return _presaleInfo._tokenAddress.balanceOf(address(this));
-    }
     function upMaxAmount(uint256 newMax)public onlyPresaleOwner {
         
         _presaleInfo._maxAmount = newMax;
