@@ -10,10 +10,11 @@ contract mainFactory is Ownable, ReentrancyGuard{
      EnumerableSet.AddressSet private presales;
      EnumerableSet.AddressSet private presaleDeployers;
      EnumerableSet.AddressSet private igniteStaff;
+     //EnumerableSet.AddressSet private FeeExempt;
     address payable feesAddress;
     IgniteIDO[] public existingContracts;
     uint256 feeForDeployment = 1000000000000000000;
-
+    uint256 feeForBuy = 0;
     function deployNewInstance(
       IERC20 tokenAddress,
       uint256 tokenPrice,
@@ -55,8 +56,11 @@ contract mainFactory is Ownable, ReentrancyGuard{
         return igniteStaff.at(_index);
     }
 
-    function seeFees() external view returns (uint256) {
-        return feeForDeployment;
+    function seeBNBFeesForDeployment() external view returns (uint256) {
+        return feeForDeployment/1000000000000000000;
+    }
+    function seeBNBFeesForBuy() external view returns (uint256) {
+        return feeForBuy/1000000000000000000;
     }
 
     function getFeeAddress() external view returns (address) {
@@ -80,7 +84,10 @@ contract mainFactory is Ownable, ReentrancyGuard{
     function updateFeeAddress(address payable newAddress) public onlyOwner{
         feesAddress=newAddress;
     }
-    function updateFeeForDeployment(uint256 newFee) public onlyOwner{
-        feeForDeployment = newFee;
+    function updateBNBFeeForDeployment(uint256 newFee) public onlyOwner{
+        feeForDeployment = newFee/1000000000000000000;
+    }
+    function updateBNBFeeForBuy(uint256 newFee) public onlyOwner{
+        feeForBuy = newFee/1000000000000000000;
     }
 }
