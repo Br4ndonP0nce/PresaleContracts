@@ -340,11 +340,10 @@ contract IgniteIDO is ReentrancyGuard {
     //testnet:  0xD99D1c33F9fC3444f8101754aBC46c52416550D1
     IUniswapV2Router02 routerAddress;
     address public idoAdmin;
-    mapping (address => bool)subAdmins;
     address private burnAddress = 0x000000000000000000000000000000000000dEaD;
     mapping(address=>bool) isWhitelisted;
     mapping(address => BuyersData) public Buyers;
-    address masterConfigSetter;
+    address factoryAddress;
     presaleInfo public _presaleInfo;
     presaleInfo2 public _presaleInfo2;
     presaleInfo3 public _presaleInfo3;
@@ -352,7 +351,6 @@ contract IgniteIDO is ReentrancyGuard {
     uint256 currentWhitelistUsers=0;
     uint256 gweiCollected= 0;
     uint256 contributorNumber=0;
-    address[] public admins;
 
     
   
@@ -361,10 +359,10 @@ contract IgniteIDO is ReentrancyGuard {
     _;
     }
     constructor(
-      address presaleConfigSetter
+      address factory
     )  {
         {
-            masterConfigSetter=presaleConfigSetter;
+            factoryAddress=factory;
             // TODO: anyone can set masterdev when launching a presale with how it currently is.
             // We need a master array of ingite wallets that can be removed and added in the main factory by the factory deployer
         }
@@ -382,7 +380,7 @@ contract IgniteIDO is ReentrancyGuard {
         uint256 _hardcap,
         uint256 _liquidityToLock
         ) external{
-            require(msg.sender==masterConfigSetter,"Only setter can init presale");
+            require(msg.sender==factoryAddress,"Only factory can init presale");
             _presaleInfo._tokenAddress = _tokenAddress;
             _presaleInfo._tokenPrice = _tokenPrice;
             _presaleInfo._routerAddress = _routerAddress;
@@ -457,26 +455,14 @@ contract IgniteIDO is ReentrancyGuard {
         _presaleInfo2._whitelistStartBlock = newStartTimestamp;
         _presaleInfo2._whitelistEndBlock = newEndTimestamp;
     }
-     function updateVettedStatus(bool isVetted) public {
-        require(subAdmins[msg.sender]);
-        _presaleInfo2.vetted = isVetted;
-    }
+
      function updateVettedStatusAdmin(bool isVetted) public {
-        require(subAdmins[msg.sender]);
+        require(this.isStaff(msg.sender));
         _presaleInfo2.vetted = isVetted;
     }
 
     function isStaff(address _wallet) external returns (bool){
         // check if valid ignite staff address in presale deployer contract variable
-    }
-
-    function addToAdmin(address newAddress)public {
-        require(this.isStaff(msg.sender));
-        subAdmins[newAddress] = true;
-        admins.push(newAddress);
-    }
-    function queryAllAdmins() public view returns(address[] memory){
-        return admins;
     }
 
     function cancelSale() public onlyPresaleOwner {
@@ -488,7 +474,7 @@ contract IgniteIDO is ReentrancyGuard {
     }
 
     function cancelSaleAdmin()external {
-        require(subAdmins[msg.sender],"Not an admin");
+        require(this.isStaff(msg.sender),"Not an admin");
         _phase = 4;
     }
     function withdrawBaseToken() public{
@@ -510,7 +496,7 @@ contract IgniteIDO is ReentrancyGuard {
         currentWhitelistUsers+=1;
     }
        function addToWhitelistAdmin (address newUser) external{
-        require(subAdmins[msg.sender],"Not an admin");
+        require(this.isStaff(msg.sender),"Not an admin");
         require(currentWhitelistUsers<=_presaleInfo2._paidSpots,"No more whitelist spots");
         isWhitelisted[newUser]=true;
         currentWhitelistUsers+=1;
@@ -522,7 +508,7 @@ contract IgniteIDO is ReentrancyGuard {
         }
     }
      function whitelistMultipleAddressesAdmin(address [] memory accounts, bool isWhitelist) public {
-         require(subAdmins[msg.sender],"Not an admin");
+         require(this.isStaff(msg.sender),"Not an admin");
          require(currentWhitelistUsers<=_presaleInfo2._paidSpots,"No more whitelist spots");
         for(uint256 i = 0; i < accounts.length; i++) {
             isWhitelisted[accounts[i]] = isWhitelist;
@@ -588,7 +574,7 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
 
     }
     function updateContractAddress(IERC20 newToken) public {
-        require(subAdmins[msg.sender]);
+        require(this.isStaff(msg.sender));
         _presaleInfo._tokenAddress = IERC20(newToken);
     }
 
