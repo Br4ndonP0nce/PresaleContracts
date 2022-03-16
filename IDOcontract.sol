@@ -1,4 +1,3 @@
-import "./enumerableSet.sol";
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
@@ -296,17 +295,9 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
     ) external;
 }
 
-pragma solidity ^0.8.0;
-
 interface Factory {
   function addIgniteStaffWallet ( address _igniteStaffWallet ) external;
   function deployNewInstance ( address tokenAddress, uint256 tokenPrice, address _routerAddress, address _idoAdmin, uint256 _maxAmount, uint256 _tokenDecimals, uint256 _softcap, uint256 _hardcap, uint256 _liquidityToLock ) external;
-  function removeIgniteStaffWallet ( address _igniteStaffWallet ) external;
-  function renounceOwnership (  ) external;
-  function transferOwnership ( address newOwner ) external;
-  function updateFeeAddress ( address newAddress ) external;
-  function updateFeeForDeployment ( uint256 newFee ) external;
-  function withdrawFees (  ) external;
   function existingContracts ( uint256 ) external view returns ( address );
   function getFeeAddress (  ) external view returns ( address );
   function igniteStaffAtIndex ( uint256 _index ) external view returns ( address );
@@ -315,7 +306,15 @@ interface Factory {
   function owner (  ) external view returns ( address );
   function presaleAtIndex ( uint256 _index ) external view returns ( address );
   function presalesLength (  ) external view returns ( uint256 );
-  function seeFees (  ) external view returns ( uint256 );
+  function removeIgniteStaffWallet ( address _igniteStaffWallet ) external;
+  function renounceOwnership (  ) external;
+  function seeBNBFeesForBuy (  ) external view returns ( uint256 );
+  function seeBNBFeesForDeployment (  ) external view returns ( uint256 );
+  function transferOwnership ( address newOwner ) external;
+  function updateBNBFeeForBuy ( uint256 newFee ) external;
+  function updateBNBFeeForDeployment ( uint256 newFee ) external;
+  function updateFeeAddress ( address newAddress ) external;
+  function withdrawFees (  ) external;
 }
 
 
@@ -361,7 +360,7 @@ contract IgniteIDO is ReentrancyGuard {
     // mainnet: 0x10ED43C718714eb63d5aA57B78B54704E256024E
     //testnet:  0xD99D1c33F9fC3444f8101754aBC46c52416550D1
     IUniswapV2Router02 routerAddress;
-    address public idoAdmin;
+    address  idoAdmin;
     address private burnAddress = 0x000000000000000000000000000000000000dEaD;
     mapping(address=>bool) isWhitelisted;
     mapping(address => BuyersData) public Buyers;
@@ -424,6 +423,10 @@ contract IgniteIDO is ReentrancyGuard {
         uint256 _whitelistEndBlock
        
         )external onlyPresaleOwner{
+        require(block.number <= _startBlock, "Public start time can't be in the past");
+        require(block.number <= _endBlock,"Public end time can't be in the past");
+        require(_startBlock < _endBlock,"Public end time can't be before the start time");
+        require(_whitelistStartBlock < _whitelistEndBlock,"Whitelist end time can't be before the start time");
         _presaleInfo2._paidSpots=_paidSpots;
         _presaleInfo2._startBlock=_startBlock;
         _presaleInfo2._endBlock=_endBlock;
@@ -469,18 +472,24 @@ contract IgniteIDO is ReentrancyGuard {
            return  _presaleInfo3._imageURL;
         }
         
-
+    
     function updatePublicSaletime(uint256 newStartTimestamp,uint256 newEndTimestamp) public onlyPresaleOwner{
-            _presaleInfo2._startBlock = newStartTimestamp;
-            _presaleInfo2._endBlock = newEndTimestamp;
+        require(block.number <= newStartTimestamp, "Start time can't be in the past");
+        require(block.number <= newEndTimestamp,"Start time can't be in the past");
+        require(newEndTimestamp < newEndTimestamp,"End time can't be before the start time");
+        _presaleInfo2._startBlock = newStartTimestamp;
+        _presaleInfo2._endBlock = newEndTimestamp;
         }
     function updateWhitelistTime(uint256 newStartTimestamp,uint256 newEndTimestamp) public onlyPresaleOwner{
+        require(block.number <= newStartTimestamp, "Start time can't be in the past");
+        require(block.number <= newEndTimestamp,"Start time can't be in the past");
+        require(newEndTimestamp < newEndTimestamp,"End time can't be before the start time");
         _presaleInfo2._whitelistStartBlock = newStartTimestamp;
         _presaleInfo2._whitelistEndBlock = newEndTimestamp;
     }
 
      function updateVettedStatusAdmin(bool isVetted) public {
-        require(this.isStaff(msg.sender));
+        require(this.isStaff(msg.sender),"Not Staff");
         _presaleInfo2.vetted = isVetted;
     }
 
@@ -629,6 +638,7 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
     function isWhiteListed(address userAddress) public view returns(bool){
         return isWhitelisted[userAddress];
     }
+
 
     function _startMarket() public onlyPresaleOwner {
     /*
