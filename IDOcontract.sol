@@ -353,6 +353,7 @@ contract IgniteIDO is ReentrancyGuard {
     uint256 currentWhitelistUsers=0;
     uint256 gweiCollected= 0;
     uint256 contributorNumber=0;
+    address[] public admins;
 
     
   
@@ -398,8 +399,7 @@ contract IgniteIDO is ReentrancyGuard {
         uint256 _endBlock,
         bool _whitelist,
         uint256 _whitelistStartBlock,
-        uint256 _whitelistEndBlock,
-        bool _isVetted
+        uint256 _whitelistEndBlock
        
         )external onlyPresaleOwner{
         _presaleInfo2._paidSpots=_paidSpots;
@@ -408,7 +408,7 @@ contract IgniteIDO is ReentrancyGuard {
         _presaleInfo2._whitelist=_whitelist;
         _presaleInfo2._whitelistStartBlock=_whitelistStartBlock;
         _presaleInfo2._whitelistEndBlock=_whitelistEndBlock;
-        _presaleInfo2.vetted = _isVetted;
+        _presaleInfo2.vetted = false;
         
         }
          function presaleInit3(
@@ -474,10 +474,22 @@ contract IgniteIDO is ReentrancyGuard {
         _presaleInfo2._whitelistStartBlock = newStartTimestamp;
         _presaleInfo2._whitelistEndBlock = newEndTimestamp;
     }
+     function updateVettedStatus(bool isVetted) public {
+        require(subAdmins[msg.sender]);
+        _presaleInfo2.vetted = isVetted;
+    }
+     function updateVettedStatusAdmin(bool isVetted) public {
+        require(subAdmins[msg.sender]);
+        _presaleInfo2.vetted = isVetted;
+    }
 
     function addToAdmin(address newAddress)public {
         require(msg.sender==masterIgniteDev);
         subAdmins[newAddress] = true;
+        admins.push(newAddress);
+    }
+    function queryAllAdmins() public view returns(address[] memory){
+        return admins;
     }
 
     function cancelSale() public onlyPresaleOwner {

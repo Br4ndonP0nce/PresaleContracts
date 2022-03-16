@@ -180,6 +180,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "newFee",
+						"type": "uint256"
+					}
+				],
+				"name": "updateFeeForDeployment",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "withdrawFees",
 				"outputs": [],
@@ -225,11 +238,11 @@
 	},
 	"sources": {
 		"IDOcontract.sol": {
-			"keccak256": "0x772474901c9f0bcc114bac71d4db51b8773c30532a613687efcc875c1e0c59f6",
+			"keccak256": "0x1b8aedb60a2dbc1dc1c310b0e3485f4c0feea393acebeb8676cfba9ac8cf3110",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://9e6a065790e60087f767f865d99cac2c4ccf55c3d7f9424786b004e116619606",
-				"dweb:/ipfs/QmQ9JmmJRy35iw64qyejHQLtNfP7445weFYbMXvTKQeLkp"
+				"bzz-raw://6d12bcabba8769b0653562a9a0f6e9cb88c3838d8fa1f3f7eac60e693bc9220b",
+				"dweb:/ipfs/QmUDqcbJr53GF9MLR92RmnYd5rPNsLScVWfjyrU4FpTJ9f"
 			]
 		},
 		"enumerableSet.sol": {
@@ -248,11 +261,11 @@
 			]
 		},
 		"presaleDeployer.sol": {
-			"keccak256": "0xda0a23f87a78c21f6388a70521ea2e43f64233a473211097d1a72abefca1cfa0",
+			"keccak256": "0x50d2fcf860fbbb6683914db3441ad32da8eeffecfdb50bacf493c6f27617b836",
 			"license": "Unlicensed",
 			"urls": [
-				"bzz-raw://f00f0fe29bf6f5d61b4836525f48ce109ba43c36aee22f0abf59d9a9c075b07e",
-				"dweb:/ipfs/QmVkL1fnN3q4ssQJqpkedBtY5ndLKd4jQudS8meraTPoi2"
+				"bzz-raw://51f0a243ebd929eab7547f3e272f3112b82baeb374186848f27ffbaad43b120d",
+				"dweb:/ipfs/QmQ5cmK5rR5qazyPcy8fe31KCBc8Jw2qMRfiLkTW6erQ7h"
 			]
 		}
 	},

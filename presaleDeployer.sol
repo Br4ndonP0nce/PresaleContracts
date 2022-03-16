@@ -11,6 +11,7 @@ contract mainFactory is Ownable, ReentrancyGuard{
      EnumerableSet.AddressSet private presaleDeployers;
     address payable feesAddress;
     IgniteIDO[] public existingContracts;
+    uint256 feeForDeployment = 1000000000000000000;
 
     function deployNewInstance(
       address payable masterDevAddress,
@@ -23,6 +24,7 @@ contract mainFactory is Ownable, ReentrancyGuard{
       uint256 _softcap,
       uint256 _hardcap,
       uint256 _liquidityToLock) public payable{
+          require(msg.value >= feeForDeployment,"NOT ENOUGH FEE");
         IgniteIDO newInstance = new IgniteIDO(address(this),masterDevAddress);
         //PresalesData storage newPresaleInfo = presalesMapping[address(newInstance)];
         registerPresale(address(newInstance));
@@ -47,6 +49,9 @@ contract mainFactory is Ownable, ReentrancyGuard{
     }
     function updateFeeAddress(address payable newAddress) public onlyOwner{
         feesAddress=newAddress;
+    }
+    function updateFeeForDeployment(uint256 newFee) public onlyOwner{
+        feeForDeployment = newFee;
     }
    
   
