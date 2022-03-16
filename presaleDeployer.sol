@@ -9,12 +9,13 @@ contract mainFactory is Ownable, ReentrancyGuard{
      using EnumerableSet for EnumerableSet.AddressSet;
      EnumerableSet.AddressSet private presales;
      EnumerableSet.AddressSet private presaleDeployers;
+     EnumerableSet.AddressSet private igniteStaff;
     address payable feesAddress;
     IgniteIDO[] public existingContracts;
     uint256 feeForDeployment = 1000000000000000000;
 
     function deployNewInstance(
-      address payable masterDevAddress,
+      address igniteStaff,
       IERC20 tokenAddress,
       uint256 tokenPrice,
       IUniswapV2Router02 _routerAddress,
@@ -25,7 +26,7 @@ contract mainFactory is Ownable, ReentrancyGuard{
       uint256 _hardcap,
       uint256 _liquidityToLock) public payable{
           require(msg.value >= feeForDeployment,"NOT ENOUGH FEE");
-        IgniteIDO newInstance = new IgniteIDO(address(this),masterDevAddress);
+        IgniteIDO newInstance = new IgniteIDO(address(this));
         //PresalesData storage newPresaleInfo = presalesMapping[address(newInstance)];
         registerPresale(address(newInstance));
 
@@ -42,6 +43,14 @@ contract mainFactory is Ownable, ReentrancyGuard{
      function presaleAtIndex(uint256 _index) external view returns (address) {
         return presales.at(_index);
     }
+
+       function igniteStaffLength() external view returns (uint256) {
+        return igniteStaff.length();
+    }
+     function igniteStaffAtIndex(uint256 _index) external view returns (address) {
+        return igniteStaff.at(_index);
+    }
+
     function seeFees() external view returns (uint256) {
         return feeForDeployment;
     }
@@ -55,6 +64,15 @@ contract mainFactory is Ownable, ReentrancyGuard{
         feesAddress.transfer(currentContractBalance);
 
     }
+
+    function addIgniteStaffWallet(address _igniteStaffWallet) public onlyOwner{
+        igniteStaff.add(_igniteStaffWallet);
+    }
+
+    function removeIgniteStaffWallet(address _igniteStaffWallet) public onlyOwner{
+        igniteStaff.remove(_igniteStaffWallet);
+    }
+
     function updateFeeAddress(address payable newAddress) public onlyOwner{
         feesAddress=newAddress;
     }
