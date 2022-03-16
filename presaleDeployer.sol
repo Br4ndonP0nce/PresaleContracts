@@ -43,9 +43,14 @@ contract mainFactory is Ownable, ReentrancyGuard{
         return presales.at(_index);
     }
 
-       function igniteStaffLength() external view returns (uint256) {
+    function igniteStaffContainsWallet(address _wallet) external view returns (bool) {
+        return igniteStaff.contains(_wallet);
+    }
+
+    function igniteStaffLength() external view returns (uint256) {
         return igniteStaff.length();
     }
+
      function igniteStaffAtIndex(uint256 _index) external view returns (address) {
         return igniteStaff.at(_index);
     }
