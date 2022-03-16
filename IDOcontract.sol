@@ -392,6 +392,7 @@ contract IgniteIDO is ReentrancyGuard {
             _presaleInfo._liquidityToLock=_liquidityToLock;
 
         }
+        // TODO: Let IDO admins fix first init variables if they messed up
         function presaleInit2(
         uint256 _paidSpots,
         uint256 _startBlock,
