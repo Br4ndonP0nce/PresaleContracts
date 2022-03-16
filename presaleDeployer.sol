@@ -15,7 +15,6 @@ contract mainFactory is Ownable, ReentrancyGuard{
     uint256 feeForDeployment = 1000000000000000000;
 
     function deployNewInstance(
-      address igniteStaff,
       IERC20 tokenAddress,
       uint256 tokenPrice,
       IUniswapV2Router02 _routerAddress,
