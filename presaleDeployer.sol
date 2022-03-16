@@ -42,6 +42,14 @@ contract mainFactory is Ownable, ReentrancyGuard{
      function presaleAtIndex(uint256 _index) external view returns (address) {
         return presales.at(_index);
     }
+    function seeFees() external view returns (uint256) {
+        return feeForDeployment;
+    }
+
+    function getFeeAddress() external view returns (address) {
+        return feesAddress;
+    }
+
     function withdrawFees() public onlyOwner{
         uint256 currentContractBalance = address(this).balance;
         feesAddress.transfer(currentContractBalance);
@@ -53,8 +61,4 @@ contract mainFactory is Ownable, ReentrancyGuard{
     function updateFeeForDeployment(uint256 newFee) public onlyOwner{
         feeForDeployment = newFee;
     }
-   
-  
-
-
 }
