@@ -12,7 +12,7 @@ contract mainFactory is Ownable, ReentrancyGuard{
      EnumerableSet.AddressSet private igniteStaff;
      //EnumerableSet.AddressSet private FeeExempt;
     address payable feesAddress;
-    IgniteIDO[] public existingContracts;
+    IgniteIDO[] existingContracts;
     uint256 feeForDeployment = 1000000000000000000;
     uint256 feeForBuy = 0;
     function deployNewInstance(
@@ -26,6 +26,7 @@ contract mainFactory is Ownable, ReentrancyGuard{
       uint256 _hardcap,
       uint256 _liquidityToLock) public payable{
           require(msg.value >= feeForDeployment,"NOT ENOUGH FEE");
+          require(_softcap <= _hardcap,"Softcap can't be higher than hardcap");
         IgniteIDO newInstance = new IgniteIDO(address(this));
         //PresalesData storage newPresaleInfo = presalesMapping[address(newInstance)];
         registerPresale(address(newInstance));
@@ -56,11 +57,11 @@ contract mainFactory is Ownable, ReentrancyGuard{
         return igniteStaff.at(_index);
     }
 
-    function seeBNBFeesForDeployment() external view returns (uint256) {
-        return feeForDeployment/1000000000000000000;
+    function seeFeeForDeployment() external view returns (uint256) {
+        return feeForDeployment;
     }
-    function seeBNBFeesForBuy() external view returns (uint256) {
-        return feeForBuy/1000000000000000000;
+    function seeFeeForBuy() external view returns (uint256) {
+        return feeForBuy;
     }
 
     function getFeeAddress() external view returns (address) {
@@ -84,10 +85,10 @@ contract mainFactory is Ownable, ReentrancyGuard{
     function updateFeeAddress(address payable newAddress) public onlyOwner{
         feesAddress=newAddress;
     }
-    function updateBNBFeeForDeployment(uint256 newFee) public onlyOwner{
-        feeForDeployment = newFee/1000000000000000000;
+    function updateFeeForDeployment(uint256 newFee) public onlyOwner{
+        feeForDeployment = newFee;
     }
-    function updateBNBFeeForBuy(uint256 newFee) public onlyOwner{
-        feeForBuy = newFee/1000000000000000000;
+    function updateFeeForBuy(uint256 newFee) public onlyOwner{
+        feeForBuy = newFee;
     }
 }
