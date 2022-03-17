@@ -452,15 +452,6 @@ contract IgniteIDO is ReentrancyGuard {
             _presaleInfo3._imageURL = _imageURL;
             _presaleInfo3._description = description;
         }
-    function _presaleInfo4(address wallet) public view returns(uint256, uint256, uint256, bool, uint256, uint256){
-        BuyersData storage buyer = Buyers[msg.sender];
-        uint256 tokensOwed = buyer.owedTokens;
-        uint256 contribution = buyer.contribution;
-        bool whitelist = isWhitelisted[wallet];
-        uint256 remainingTokensInContract = _presaleInfo._tokenAddress.balanceOf(address(this));
-        uint256 totalAmountFunded = gweiCollected;
-        return (_phase, tokensOwed, contribution, whitelist, remainingTokensInContract, totalAmountFunded);
-    } 
     
     function updatePublicSaletime(uint256 newStartTimestamp,uint256 newEndTimestamp) public onlyPresaleOwner{
         require(block.number <= newStartTimestamp, "Start time can't be in the past");
@@ -584,7 +575,20 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
   function _returnContributors() public view returns(uint256){
       return contributorNumber;
   }
- 
+  function checkContribution(address contributor) public view returns(uint256){
+      BuyersData storage _contributionInfo = Buyers[contributor];
+      return _contributionInfo.contribution;
+  }
+
+    function _remainingContractTokens() public view returns (uint256) {
+        return _presaleInfo._tokenAddress.balanceOf(address(this));
+    }
+    function returnTotalAmountFunded() public view returns (uint256){
+        return gweiCollected;
+    }
+    function returnContractAddress() public view returns (address){
+        return address(_presaleInfo._tokenAddress);
+    }
 
     function updateContractAddressMaster(IERC20 newToken)public {
         require(this.isStaff(msg.sender));
@@ -596,6 +600,22 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
         _presaleInfo._tokenAddress = IERC20(newToken);
     }
 
+    function _returnPhase() public view returns (uint256) {
+        return _phase;
+    }
+
+    function returnHardCap() public view returns(uint256){
+        return _presaleInfo._hardcap;
+    }
+      function returnSoftCap() public view returns(uint256){
+        return _presaleInfo._softcap;
+    }
+    function returnVetted () public view returns(bool){
+        return _presaleInfo2.vetted;
+    }
+    function returnRemainingTokensInContract() public view returns(uint256){
+        return _presaleInfo._tokenAddress.balanceOf(address(this));
+    }
     function upMaxAmount(uint256 newMax)public onlyPresaleOwner {
         
         _presaleInfo._maxAmount = newMax;
