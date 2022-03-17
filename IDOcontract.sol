@@ -452,6 +452,7 @@ contract IgniteIDO is ReentrancyGuard {
             _presaleInfo3._imageURL = _imageURL;
             _presaleInfo3._description = description;
         }
+        
     
     function updatePublicSaletime(uint256 newStartTimestamp,uint256 newEndTimestamp) public onlyPresaleOwner{
         require(block.number <= newStartTimestamp, "Start time can't be in the past");
@@ -571,6 +572,7 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
     gweiCollected += amount_in;
     
 }
+
     
   function _returnContributors() public view returns(uint256){
       return contributorNumber;
@@ -623,7 +625,9 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
     function isWhiteListed(address userAddress) public view returns(bool){
         return isWhitelisted[userAddress];
     }
-
+    function presaleInfo4(address wallet) public view returns(uint256, uint256, uint256){
+        return (_phase, gweiCollected, contributorNumber);
+    }
 
     function _startMarket() public onlyPresaleOwner {
     /*
