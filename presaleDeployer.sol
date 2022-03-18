@@ -13,8 +13,9 @@ contract mainFactory is Ownable, ReentrancyGuard{
      //EnumerableSet.AddressSet private FeeExempt;
     address payable feesAddress;
     IgniteIDO[] existingContracts;
-    uint256 feeForDeployment = 1000000000000000000;
+    uint256 feeForDeployment = 0;
     uint256 feeForBuy = 0;
+    // TODO: Add in a deactivate button that denies new deployments
     function deployNewInstance(
       IERC20 tokenAddress,
       uint256 tokenPrice,
