@@ -336,6 +336,7 @@ contract IgniteIDO is ReentrancyGuard {
         uint256 _softcap;
         uint256 _hardcap;
         uint256 _liquidityToLock;
+        bool vetted;
     }
     struct presaleInfo2{
         uint256 _startBlock;
@@ -344,9 +345,6 @@ contract IgniteIDO is ReentrancyGuard {
         uint256 _whitelistStartBlock;
         uint256 _whitelistEndBlock;
         uint256 _paidSpots;
-        bool vetted;
-       
-
     }
     struct presaleInfo3{
         bytes32 _discord;
@@ -413,6 +411,7 @@ contract IgniteIDO is ReentrancyGuard {
             _presaleInfo._softcap=_softcap;
             _presaleInfo._hardcap=_hardcap;
             _presaleInfo._liquidityToLock=_liquidityToLock;
+            _presaleInfo.vetted = false;
 
         }
         // TODO: Let IDO admins fix first init variables if they messed up
@@ -428,14 +427,16 @@ contract IgniteIDO is ReentrancyGuard {
         require(block.number <= _startBlock, "Public start time can't be in the past");
         require(block.number <= _endBlock,"Public end time can't be in the past");
         require(_startBlock < _endBlock,"Public end time can't be before the start time");
-        require(_whitelistStartBlock < _whitelistEndBlock,"Whitelist end time can't be before the start time");
+        if (_whitelist){
+            require(_whitelistStartBlock < _whitelistEndBlock,"Whitelist end time can't be before the start time");
+        }
         _presaleInfo2._paidSpots=_paidSpots;
         _presaleInfo2._startBlock=_startBlock;
         _presaleInfo2._endBlock=_endBlock;
         _presaleInfo2._whitelist=_whitelist;
         _presaleInfo2._whitelistStartBlock=_whitelistStartBlock;
         _presaleInfo2._whitelistEndBlock=_whitelistEndBlock;
-        _presaleInfo2.vetted = false;
+        
         
         }
          function presaleInit3(
@@ -472,7 +473,7 @@ contract IgniteIDO is ReentrancyGuard {
 
      function updateVettedStatusAdmin(bool isVetted) public {
         require(this.isStaff(msg.sender),"Not Staff");
-        _presaleInfo2.vetted = isVetted;
+        _presaleInfo.vetted = isVetted;
     }
 
     function isStaff(address _wallet) external returns (bool){
@@ -542,7 +543,7 @@ contract IgniteIDO is ReentrancyGuard {
     }
     function userDepositsWhitelist()public payable nonReentrant{//Phase =1 whitelist phase
     require(_presaleInfo2._whitelist,"not a whitelisted sale");
-    require (block.timestamp >= _presaleInfo2._whitelistStartBlock && block.timestamp<_presaleInfo2._whitelistEndBlock,"not on time for whitelist");
+    require (block.number >= _presaleInfo2._whitelistStartBlock && block.number<_presaleInfo2._whitelistEndBlock,"not on time for whitelist");
     //require(_phase == 1,"presale not open yet");
     require(isWhitelisted[msg.sender],"Not whitelisted");
     require(msg.value<=_presaleInfo._maxAmount,"Contribution needs to be in the minimum buy/max buy range");
@@ -559,7 +560,7 @@ contract IgniteIDO is ReentrancyGuard {
 }
  
 function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 public phase
-    require(block.timestamp>=_presaleInfo2._startBlock && block.timestamp<=_presaleInfo2._endBlock,"not on time for public sale");
+    require(block.number>=_presaleInfo2._startBlock && block.number<=_presaleInfo2._endBlock,"not on time for public sale");
     //require(_phase==2,"Not on public _phase yet");
     require(msg.value<=_presaleInfo._maxAmount,"Contribution needs to be in the minimum buy/max buy range");
     require(address(this).balance + msg.value<=_presaleInfo._maxAmount);
@@ -618,7 +619,7 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
         return _presaleInfo._softcap;
     }
     function returnVetted () public view returns(bool){
-        return _presaleInfo2.vetted;
+        return _presaleInfo.vetted;
     }
     function returnRemainingTokensInContract() public view returns(uint256){
         return _presaleInfo._tokenAddress.balanceOf(address(this));
@@ -721,7 +722,7 @@ pairs reserved amount and bnb to create liquidity pool
                 0,
                 0,
                 idoAdmin,
-                block.timestamp + 1200
+                block.number + 1200
             );
     }
 }
