@@ -416,11 +416,11 @@ contract IgniteIDO is ReentrancyGuard {
         uint256 _startBlock,
         uint256 _endBlock
         )external onlyPresaleOwner{
-        require(block.number <= _startBlock, "Public start time can't be in the past");
-        require(block.number <= _endBlock,"Public end time can't be in the past");
-        require(_startBlock < _endBlock,"Public end time can't be before the start time");
-        _presaleInfo2._startBlock=_startBlock;
-        _presaleInfo2._endBlock=_endBlock;
+            require(block.number <= _startBlock, "Public start time can't be in the past");
+            require(block.number <= _endBlock,"Public end time can't be in the past");
+            require(_startBlock < _endBlock,"Public end time can't be before the start time");
+            _presaleInfo2._startBlock=_startBlock;
+            _presaleInfo2._endBlock=_endBlock;
     }
     function presaleInit3(
         bytes32  _discord,
@@ -438,11 +438,10 @@ contract IgniteIDO is ReentrancyGuard {
             _presaleInfo3._description = description;
     }
     function presaleInit4(
-        bool _whitelist,
         uint256 _whitelistStartBlock,
         uint256 _whitelistEndBlock
     )external onlyPresaleOwner{
-            _presaleInfo4._whitelist = _whitelist;
+            _presaleInfo4._whitelist = true;
             _presaleInfo4._whitelistStartBlock = _whitelistStartBlock;
             _presaleInfo4._whitelistEndBlock = _whitelistEndBlock;
     }
@@ -464,10 +463,6 @@ contract IgniteIDO is ReentrancyGuard {
 
     function cancelSale() public onlyPresaleOwner {
         _phase = 4;
-    }
-    function emergencyCancelSale() public{
-        require(this.isStaff(msg.sender));
-         _phase = 4;
     }
 
     function cancelSaleAdmin()external {
@@ -553,13 +548,13 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
     }
 
     
-  function _returnContributors() public view returns(uint256){
-      return contributorNumber;
-  }
-  function checkContribution(address contributor) public view returns(uint256){
-      BuyersData storage _contributionInfo = Buyers[contributor];
-      return _contributionInfo.contribution;
-  }
+    function _returnContributors() public view returns(uint256){
+        return contributorNumber;
+    }
+    function checkContribution(address contributor) public view returns(uint256){
+        BuyersData storage _contributionInfo = Buyers[contributor];
+        return _contributionInfo.contribution;
+    }
 
     function _remainingContractTokens() public view returns (uint256) {
         return _presaleInfo._tokenAddress.balanceOf(address(this));
@@ -603,7 +598,7 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
     function isWhiteListed(address userAddress) public view returns(bool){
         return isWhitelisted[userAddress];
     }
-    function presaleInfo5(address wallet) public view returns(uint256, uint256, uint256, bool){
+    function presaleInfo5() public view returns(uint256, uint256, uint256, bool){
         return (_phase, gweiCollected, contributorNumber, listed);
     }
     function getListed() public view returns(bool){
