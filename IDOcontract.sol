@@ -373,6 +373,7 @@ contract IgniteIDO is ReentrancyGuard {
     uint256 currentWhitelistUsers=0;
     uint256 gweiCollected= 0;
     uint256 contributorNumber=0;
+    bool listed = true;
 
     
   
@@ -558,7 +559,7 @@ contract IgniteIDO is ReentrancyGuard {
 }
  
 function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 public phase
-    require(block.timestamp>=_presaleInfo2._startBlock && block.timestamp<_presaleInfo2._endBlock,"not on time for public sale");
+    require(block.timestamp>=_presaleInfo2._startBlock && block.timestamp<=_presaleInfo2._endBlock,"not on time for public sale");
     //require(_phase==2,"Not on public _phase yet");
     require(msg.value<=_presaleInfo._maxAmount,"Contribution needs to be in the minimum buy/max buy range");
     require(address(this).balance + msg.value<=_presaleInfo._maxAmount);
@@ -572,6 +573,10 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
     gweiCollected += amount_in;
     
 }
+
+    function getBlockInfo() public view returns(uint, uint){
+        return (block.timestamp,block.number);
+    }
 
     
   function _returnContributors() public view returns(uint256){
@@ -625,9 +630,18 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
     function isWhiteListed(address userAddress) public view returns(bool){
         return isWhitelisted[userAddress];
     }
-    function presaleInfo4(address wallet) public view returns(uint256, uint256, uint256){
-        return (_phase, gweiCollected, contributorNumber);
+    function presaleInfo4(address wallet) public view returns(uint256, uint256, uint256, bool){
+        return (_phase, gweiCollected, contributorNumber, listed);
     }
+    function getListed() public view returns(bool){
+        return listed;
+    }
+
+    
+      function setListed(bool value) public {
+        require(this.isStaff(msg.sender));
+        listed = value;
+  }
 
     function _startMarket() public onlyPresaleOwner {
     /*
