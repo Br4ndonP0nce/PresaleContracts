@@ -434,7 +434,7 @@ contract IgniteIDO is ReentrancyGuard {
         uint256 _startBlock,
         uint256 _endBlock
     )external{
-        require(msg.sender==contractInfo.addresses.idoAdmin || isStaff(msg.sender ),"Needs priviledged account");
+        require(msg.sender==contractInfo.addresses.idoAdmin || isStaff(msg.sender) ,"Needs priviledged account");
         require(block.number <= _startBlock, "Public start time can't be in the past");
         require(block.number <= _endBlock,"Public end time can't be in the past");
         require(_startBlock < _endBlock,"Public end time can't be before the start time");
@@ -465,7 +465,7 @@ contract IgniteIDO is ReentrancyGuard {
         bytes32 _imageURL,
         bytes32 _description
     )external{
-        require(msg.sender==contractInfo.addresses.idoAdmin,"Only IDO Admin can set socials");
+        require(msg.sender==contractInfo.addresses.idoAdmin || isStaff(msg.sender ),"Needs priviledged account");
         contractInfo.socials.discord = _discord;
         contractInfo.socials.twitter = _twitter;
         contractInfo.socials.telegram = _telegram;
@@ -710,9 +710,9 @@ contract IgniteIDO is ReentrancyGuard {
         contractInfo.presaleValues.listed = value;
     }
 
-    function removeListingIdoAdmin(bool value) external {
+    function removeListingIdoAdmin() external {
         require(msg.sender==contractInfo.addresses.idoAdmin || isStaff(msg.sender),"Needs priviledged account");
-        contractInfo.presaleValues.listed = value;
+        contractInfo.presaleValues.listed = false;
     }
 
     function startMarket() external {
