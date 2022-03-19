@@ -317,334 +317,441 @@ interface Factory {
 }
 
 
-
-
 pragma solidity ^0.8.0;
 
 contract IgniteIDO is ReentrancyGuard {
-      struct BuyersData {
+
+    // creating my structs
+
+
+    struct BuyersData {
         uint256 contribution;
         uint256 owedTokens;
     }
-    struct presaleInfo{
-        IERC20 _tokenAddress;
-        uint256 _tokenPrice;//How many tokens do i get per bnb 18 decimals tokens can be calculated directly
-        IUniswapV2Router02 _routerAddress;
-        address payable _idoAdmin;
-        uint256 _maxAmount;
-        uint256 _tokenDecimals;
-        uint256 _softcap;
-        uint256 _hardcap;
-        uint256 _liquidityToLock;
-        bool vetted;
+    struct PresaleValues{
+        uint256 maxAmount;
+        uint256 softcap;
+        uint256 hardcap;
+        uint256 liquidityToLock;
+        bool listed;
+        uint256 phase;
     }
-    struct presaleInfo2{
-        uint256 _startBlock;
-        uint256 _endBlock;
+    struct TokenValues{
+        //How many tokens do i get per bnb 18 decimals tokens can be calculated directly
+        uint256 tokenPrice;
+        uint256 tokenDecimals;
     }
-    struct presaleInfo3{
-        bytes32 _discord;
-        bytes32 _twitter;
-        bytes32 _telegram;
-        bytes32 _website;
-        bytes32 _imageURL;
-        bytes32 _description;
+    struct Addresses{
+        address factoryAddress;
+        address payable idoAdmin;
+        address burnAddress;
+        IERC20 tokenAddress;
+        IUniswapV2Router02 routerAddress;
     }
-    struct presaleInfo4{
-        bool _whitelist;
-        uint256 _whitelistStartBlock;
-        uint256 _whitelistEndBlock;
+    struct PublicSale{
+        uint256 startBlock;
+        uint256 endBlock;
     }
-   
-    IUniswapV2Router02 routerAddress;
-    address  idoAdmin;
-    address private burnAddress = 0x000000000000000000000000000000000000dEaD;
-    mapping(address=>bool) isWhitelisted;
-    mapping(address => BuyersData) public Buyers;
-    address factoryAddress;
-    presaleInfo public _presaleInfo;
-    presaleInfo2 public _presaleInfo2;
-    presaleInfo3 public _presaleInfo3;
-    presaleInfo4 public _presaleInfo4;
-    uint256 _phase;
-    uint256 currentWhitelistUsers=0;
-    uint256 gweiCollected= 0;
-    uint256 contributorNumber=0;
-    bool listed = true;
-    modifier onlyPresaleOwner() {
-    require(_presaleInfo._idoAdmin == msg.sender, "NOT PRESALE OWNER");
-    _;
+    struct Socials{
+        bytes32 discord;
+        bytes32 twitter;
+        bytes32 telegram;
+        bytes32 website;
+        bytes32 imageURL;
+        bytes32 description;
     }
-    constructor(
-      address factory
-    )  {
-        {
-            factoryAddress=factory;
-            // TODO: anyone can set masterdev when launching a presale with how it currently is.
-            // We need a master array of ingite wallets that can be removed and added in the main factory by the factory deployer
-        }
+    struct WhitelistSale{
+        bool whitelist;
+        uint256 whitelistStartBlock;
+        uint256 whitelistEndBlock;
+        uint256 paidSpots;
+        uint256 currentWhitelistUsers;
+        mapping(address=>bool) isWhitelisted;
+    }
+    struct Contributions{
+        uint256 gweiCollected;
+        uint256 contributorNumber;
+    }
+    struct Vetting{
+        bool isVetted;
+        uint256 vettingScore;
+        bytes32 vettingCompany;
+        bytes32 vettingDetails;
+
+    }
+    struct ContractInfo{
+        PresaleValues presaleValues;
+        TokenValues tokenValues;
+        Addresses addresses;
+        PublicSale publicSale;
+        Socials socials;
+        WhitelistSale whitelistSale;
+        Contributions contributions;
+        Vetting vetting;
     }
 
-    
+    // global variables
+
+    ContractInfo contractInfo;
+    mapping(address => BuyersData) Buyers;
+
+    constructor (address _factory)  {
+        // non-standard variable init
+        contractInfo.addresses.factoryAddress = _factory;
+        contractInfo.addresses.burnAddress = 0x000000000000000000000000000000000000dEaD;
+        contractInfo.presaleValues.listed = true;
+    }
+
+    // set functions
+
     function presaleInit(
         IERC20 _tokenAddress,
         uint256 _tokenPrice,
         IUniswapV2Router02 _routerAddress,
-        address payable _idoAdmin,//Similar to presale Owner
+        address payable _idoAdmin,
         uint256 _maxAmount,
         uint256 _tokenDecimals,
         uint256 _softcap,
         uint256 _hardcap,
-        uint256 _liquidityToLock
-        ) external{
-            require(msg.sender==factoryAddress,"Only factory can init presale");
-            require(_softcap <= _hardcap,"Softcap needs to be smaller than hardcap");
-            require(_liquidityToLock <= _hardcap,"Liquidity lock needs to be smaller or equal to hardcap (max value)");
-            _presaleInfo._tokenAddress = _tokenAddress;
-            _presaleInfo._tokenPrice = _tokenPrice;
-            _presaleInfo._routerAddress = _routerAddress;
-            _presaleInfo._idoAdmin=_idoAdmin;
-            _presaleInfo._maxAmount=_maxAmount;
-            _presaleInfo._tokenDecimals=_tokenDecimals;
-            _presaleInfo._softcap=_softcap;
-            _presaleInfo._hardcap=_hardcap;
-            _presaleInfo._liquidityToLock=_liquidityToLock;
-            _presaleInfo.vetted = false;
-        }
-        // TODO: Let IDO admins fix first init variables if they messed up
-    function presaleInit2(
+        uint256 _liquidityToLock 
+    )external{
+        require(msg.sender==contractInfo.addresses.factoryAddress,"Only factory can init presale");
+        contractInfo.addresses.tokenAddress = _tokenAddress;
+        contractInfo.addresses.routerAddress = _routerAddress;
+        contractInfo.addresses.idoAdmin = _idoAdmin;
+        
+        contractInfo.tokenValues.tokenDecimals = _tokenDecimals;
+        contractInfo.tokenValues.tokenPrice = _tokenPrice;
+        
+        contractInfo.presaleValues.maxAmount = _maxAmount;
+        contractInfo.presaleValues.softcap = _softcap;
+        contractInfo.presaleValues.hardcap = _hardcap;
+        contractInfo.presaleValues.liquidityToLock = _liquidityToLock;
+    }
+
+    // TODO: Let IDO admins fix first init variables if they messed up
+    function setPublicSale(
         uint256 _startBlock,
         uint256 _endBlock
-        )external onlyPresaleOwner{
-            require(block.number <= _startBlock, "Public start time can't be in the past");
-            require(block.number <= _endBlock,"Public end time can't be in the past");
-            require(_startBlock < _endBlock,"Public end time can't be before the start time");
-            _presaleInfo2._startBlock=_startBlock;
-            _presaleInfo2._endBlock=_endBlock;
+    )external{
+        require(msg.sender==contractInfo.addresses.idoAdmin || isStaff(msg.sender ),"Needs priviledged account");
+        require(block.number <= _startBlock, "Public start time can't be in the past");
+        require(block.number <= _endBlock,"Public end time can't be in the past");
+        require(_startBlock < _endBlock,"Public end time can't be before the start time");
+        contractInfo.publicSale.startBlock = _startBlock;
+        contractInfo.publicSale.endBlock = _endBlock;
     }
-    function presaleInit3(
-        bytes32  _discord,
-        bytes32  _twitter,
-        bytes32  _telegram,
-        bytes32  _website,
-        bytes32  _imageURL,
-        bytes32  description
-        )external onlyPresaleOwner{
-            _presaleInfo3._discord = _discord;
-            _presaleInfo3._twitter = _twitter;
-            _presaleInfo3._telegram = _telegram;
-            _presaleInfo3._website = _website;
-            _presaleInfo3._imageURL = _imageURL;
-            _presaleInfo3._description = description;
-    }
-    function presaleInit4(
+
+    function setWhitelistSale(
+        uint256 _paidSpots,
         uint256 _whitelistStartBlock,
         uint256 _whitelistEndBlock
-    )external onlyPresaleOwner{
-            _presaleInfo4._whitelist = true;
-            _presaleInfo4._whitelistStartBlock = _whitelistStartBlock;
-            _presaleInfo4._whitelistEndBlock = _whitelistEndBlock;
-    }
-    
-
-    function updateVettedStatusAdmin(bool isVetted) public {
-        require(this.isStaff(msg.sender),"Not Staff");
-        _presaleInfo.vetted = isVetted;
-    }
-
-    function isStaff(address _wallet) external returns (bool){
-        // check if valid ignite staff address in presale deployer contract variable
-        return Factory(factoryAddress).igniteStaffContainsWallet(_wallet);
+    )external{
+        require(msg.sender==contractInfo.addresses.idoAdmin || isStaff(msg.sender ),"Needs priviledged account");
+        require(block.number <= _whitelistStartBlock, "Whitelist start time can't be in the past");
+        require(block.number <= _whitelistEndBlock,"Whitelist end time can't be in the past");
+        require(_whitelistStartBlock < _whitelistEndBlock,"Whitelist end time can't be before the start time");
+        contractInfo.whitelistSale.whitelist = true;
+        contractInfo.whitelistSale.paidSpots = _paidSpots;
+        contractInfo.whitelistSale.whitelistStartBlock = _whitelistStartBlock;
+        contractInfo.whitelistSale.whitelistEndBlock = _whitelistEndBlock;
     }
 
-    function getbuyFee() external returns (uint256){
-        return Factory(factoryAddress).seeFeeForBuy();
+    function setSocials(
+        bytes32 _discord,
+        bytes32 _twitter,
+        bytes32 _telegram,
+        bytes32 _website,
+        bytes32 _imageURL,
+        bytes32 _description
+    )external{
+        require(msg.sender==contractInfo.addresses.idoAdmin,"Only IDO Admin can set socials");
+        contractInfo.socials.discord = _discord;
+        contractInfo.socials.twitter = _twitter;
+        contractInfo.socials.telegram = _telegram;
+        contractInfo.socials.website = _website;
+        contractInfo.socials.imageURL = _imageURL;
+        contractInfo.socials.description = _description;
     }
 
-    function cancelSale() public onlyPresaleOwner {
-        _phase = 4;
+    function setVettedStatus(
+        bool _isVetted, 
+        uint256 _vettingScore, 
+        bytes32 _vettingCompany, 
+        bytes32 _vettingDetails
+    ) external {
+        require(this.isStaff(msg.sender),"Only Staff can do vetting");
+        contractInfo.vetting.isVetted = _isVetted;
+        contractInfo.vetting.vettingScore = _vettingScore;
+        contractInfo.vetting.vettingCompany = _vettingCompany;
+        contractInfo.vetting.vettingDetails = _vettingDetails;
     }
 
-    function cancelSaleAdmin()external {
-        require(this.isStaff(msg.sender),"Not an admin");
-        _phase = 4;
+    // return functions
+
+    function returnPresaleValues() external view returns(
+        uint256 phase,
+        uint256 maxAmount,
+        uint256 softcap,
+        uint256 hardcap,
+        uint256 liquidityToLock,
+        bool listed
+    ){
+        return(
+            contractInfo.presaleValues.phase,
+            contractInfo.presaleValues.maxAmount,
+            contractInfo.presaleValues.softcap,
+            contractInfo.presaleValues.hardcap,
+            contractInfo.presaleValues.liquidityToLock,
+            contractInfo.presaleValues.listed
+        );
     }
-    function withdrawBaseToken() public{
-        require(_phase == 4,"not a refund phase");
+    function returnTokenValues() external view returns(
+        uint256 tokenPrice,
+        uint256 tokenDecimals
+    ){
+        return(
+            contractInfo.tokenValues.tokenPrice,
+            contractInfo.tokenValues.tokenDecimals
+        );
+    }
+
+    function returnAddresses() external view returns(
+        address factoryAddress,
+        address idoAdmin,
+        address burnAddress,
+        IERC20 tokenAddress,
+        IUniswapV2Router02 routerAddress
+    ){
+        return(
+            contractInfo.addresses.factoryAddress,
+            contractInfo.addresses.idoAdmin,
+            contractInfo.addresses.burnAddress,
+            contractInfo.addresses.tokenAddress,
+            contractInfo.addresses.routerAddress
+        );
+    }
+
+    function returnPublicSaleInfo() external view returns(
+        uint256 startBlock,
+        uint256 endBlock
+    ){
+        return(
+            contractInfo.publicSale.startBlock,
+            contractInfo.publicSale.endBlock
+        );
+    }
+
+    function returnSocials() external view returns(
+        bytes32 discord,
+        bytes32 twitter,
+        bytes32 telegram,
+        bytes32 website,
+        bytes32 imageURL,
+        bytes32 description
+    ){
+        return(
+            contractInfo.socials.discord,
+            contractInfo.socials.twitter,
+            contractInfo.socials.telegram,
+            contractInfo.socials.website,
+            contractInfo.socials.imageURL,
+            contractInfo.socials.description
+        );
+    }
+
+    function returnWhitelistInfo() external view returns(
+        bool whitelist,
+        uint256 whitelistStartBlock,
+        uint256 whitelistEndBlock,
+        uint256 paidSpots,
+        uint256 currentWhitelistUsers
+    ){
+        return(
+            contractInfo.whitelistSale.whitelist,
+            contractInfo.whitelistSale.whitelistStartBlock,
+            contractInfo.whitelistSale.whitelistEndBlock,
+            contractInfo.whitelistSale.paidSpots,
+            contractInfo.whitelistSale.currentWhitelistUsers
+        );
+    }
+
+    function returnContributions() external view returns(
+        uint256 gweiCollected,
+        uint256 contributorNumber
+    ){
+        return(
+            contractInfo.contributions.gweiCollected,
+            contractInfo.contributions.contributorNumber
+        );
+    }
+
+    function returnVetting() external view returns(
+        uint256 vettingScore,
+        bytes32 vettingCompany,
+        bytes32 vettingDetails
+    ){
+        return(
+            contractInfo.vetting.vettingScore,
+            contractInfo.vetting.vettingCompany,
+            contractInfo.vetting.vettingDetails
+        );
+    }
+
+
+    function isStaff(address _wallet) public view returns (bool){
+        return Factory(contractInfo.addresses.factoryAddress).igniteStaffContainsWallet(_wallet);
+    }
+
+    function getbuyFee() public view returns (uint256){
+        return Factory(contractInfo.addresses.factoryAddress).seeFeeForBuy();
+    }
+
+    // external functions
+
+    function cancelSale() external {
+        require(msg.sender==contractInfo.addresses.idoAdmin || isStaff(msg.sender),"Needs priviledged account");
+        contractInfo.presaleValues.phase = 4;
+    }
+
+    function withdrawBaseToken() external nonReentrant{
+        require(contractInfo.presaleValues.phase == 4,"not a refund phase");
         address payable currentUser = payable(msg.sender);
-        BuyersData storage _contributionInfo = Buyers[msg.sender];
-        uint256 userContribution = _contributionInfo.contribution;
-        require(userContribution>0,"Not contributed");
+        BuyersData storage contributionInfo = Buyers[msg.sender];
+        uint256 userContribution = contributionInfo.contribution;
+        require(userContribution>0 , "Not contributed");
         currentUser.transfer(userContribution);
-        _contributionInfo.contribution = 0;
-
-        
-
+        contributionInfo.contribution = 0;
     }
   
-    function addToWhitelistOwner (address newUser)public onlyPresaleOwner{
-        isWhitelisted[newUser]=true;
-        currentWhitelistUsers+=1;
-    }
-       function addToWhitelistAdmin (address newUser) external{
-        require(this.isStaff(msg.sender),"Not an admin");
-        isWhitelisted[newUser]=true;
-        currentWhitelistUsers+=1;
-    }
-     function whitelistMultipleAddresses(address [] memory accounts, bool isWhitelist) public onlyPresaleOwner{
-        for(uint256 i = 0; i < accounts.length; i++) {
-            isWhitelisted[accounts[i]] = isWhitelist;
-        }
-    }
-     function whitelistMultipleAddressesAdmin(address [] memory accounts, bool isWhitelist) public {
-         require(this.isStaff(msg.sender),"Not an admin");
-        for(uint256 i = 0; i < accounts.length; i++) {
-            isWhitelisted[accounts[i]] = isWhitelist;
-        }
-    }
-    function returnWhitelistUsers()public view returns(uint256){
-        return currentWhitelistUsers;
+    function addToWhitelist (address newUser) external {
+        require(msg.sender==contractInfo.addresses.idoAdmin || isStaff(msg.sender),"Needs priviledged account");
+        require(contractInfo.whitelistSale.currentWhitelistUsers <= contractInfo.whitelistSale.paidSpots, "No more whitelist spots");
+        contractInfo.whitelistSale.isWhitelisted[newUser]=true;
+        contractInfo.whitelistSale.currentWhitelistUsers+=1;
     }
 
-    function getFactoryAddress()public view returns(address){
-        return factoryAddress;
+    function whitelistMultipleAddresses(
+         address [] memory accounts, 
+         bool isWhitelist
+    ) external {
+        require(msg.sender==contractInfo.addresses.idoAdmin || isStaff(msg.sender) ,"Needs priviledged account");
+        require(contractInfo.whitelistSale.currentWhitelistUsers <= contractInfo.whitelistSale.paidSpots, "No more whitelist spots");
+        for(uint256 i = 0; i < accounts.length; i++) {
+            contractInfo.whitelistSale.isWhitelisted[accounts[i]] = isWhitelist;
+        }
     }
-    function userDepositsWhitelist()public payable nonReentrant{//Phase =1 whitelist phase
-    require(_presaleInfo4._whitelist,"not a whitelisted sale");
-    require (block.number >= _presaleInfo4._whitelistStartBlock && block.number<_presaleInfo4._whitelistEndBlock,"not on time for whitelist");
-    //require(_phase == 1,"presale not open yet");
-    require(isWhitelisted[msg.sender],"Not whitelisted");
-    require(msg.value<=_presaleInfo._maxAmount,"Contribution needs to be in the minimum buy/max buy range");
-    require(address(this).balance + msg.value<=_presaleInfo._hardcap);
-    require(msg.value >= this.getbuyFee(),"NOT ENOUGH FEE");
-    BuyersData storage _contributionInfo = Buyers[msg.sender];
-    uint256 amount_in = msg.value;
-    uint256 tokensSold = amount_in * _presaleInfo._tokenPrice;
-    require(_contributionInfo.contribution+msg.value<=_presaleInfo._maxAmount,"Cant contribute anymore");
-    _contributionInfo.contribution += msg.value;
-    _contributionInfo.owedTokens += tokensSold;
-    gweiCollected += amount_in;
-    contributorNumber+=1;
-}
+
+    function userDepositsWhitelist() external payable nonReentrant{//Phase =1 whitelist phase
+        require(contractInfo.whitelistSale.whitelist,"not a whitelisted sale");
+        require (block.timestamp >= contractInfo.whitelistSale.whitelistStartBlock && block.timestamp < contractInfo.whitelistSale.whitelistEndBlock,"not on time for whitelist");
+        //require(_phase == 1,"presale not open yet");
+        require(contractInfo.whitelistSale.isWhitelisted[msg.sender], "Not whitelisted");
+        require(msg.value <= contractInfo.presaleValues.maxAmount, "Contribution needs to be in the minimum buy/max buy range");
+        require(address(this).balance + msg.value <= contractInfo.presaleValues.hardcap, "Would overflow Hardcap");
+        require(msg.value >= this.getbuyFee(),"Does not cover fees");
+        
+        BuyersData storage contributionInfo = Buyers[msg.sender];
+        require( contributionInfo.contribution + msg.value <= contractInfo.presaleValues.maxAmount, "Cant contribute anymore");
+        uint256 amountIn = msg.value;
+        uint256 tokensSold = amountIn * contractInfo.tokenValues.tokenPrice;
+        
+        contributionInfo.contribution += msg.value;
+        contributionInfo.owedTokens += tokensSold;
+        contractInfo.contributions.gweiCollected += amountIn;
+        contractInfo.contributions.contributorNumber+=1;
+    }
  
-function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 public phase
-    require(block.number>=_presaleInfo2._startBlock && block.number<=_presaleInfo2._endBlock,"not on time for public sale");
-    //require(_phase==2,"Not on public _phase yet");
-    require(msg.value<=_presaleInfo._maxAmount,"Contribution needs to be in the minimum buy/max buy range");
-    require(address(this).balance + msg.value<=_presaleInfo._maxAmount);
-    require(msg.value >= this.getbuyFee(),"NOT ENOUGH FEE");
-    BuyersData storage _contributionInfo = Buyers[msg.sender];
-    uint256 amount_in = msg.value;
-    uint256 tokensSold = amount_in * _presaleInfo._tokenPrice;
-    require(_contributionInfo.contribution+msg.value<=_presaleInfo._maxAmount,"Cant contribute anymore");
-    _contributionInfo.contribution += msg.value;
-    _contributionInfo.owedTokens += tokensSold;
-    gweiCollected += amount_in;
-    
-}
+    function userDepositPublicPhase() external payable nonReentrant {//Phase =2 public phase
+        require(contractInfo.whitelistSale.whitelist,"not a whitelisted sale");
+        //require(_phase==2,"Not on public _phase yet");
+        require(msg.value <= contractInfo.presaleValues.maxAmount, "Contribution needs to be in the minimum buy/max buy range");
+        require(address(this).balance + msg.value <= contractInfo.presaleValues.hardcap, "Would overflow Hardcap");
+        require(msg.value >= this.getbuyFee(),"Does not cover fees");
+        
+        BuyersData storage contributionInfo = Buyers[msg.sender];
+        
+        require(contributionInfo.contribution + msg.value <= contractInfo.presaleValues.maxAmount,"Cant contribute anymore");
+        uint256 amountIn = msg.value;
+        uint256 tokensSold = amountIn * contractInfo.tokenValues.tokenPrice;
+        contributionInfo.contribution += msg.value;
+        contributionInfo.owedTokens += tokensSold;
+        contractInfo.contributions.gweiCollected += amountIn;   
+    }
 
-    function getBlockInfo() public view returns(uint, uint){
+    function getBlockInfo() external view returns(uint, uint){
         return (block.timestamp,block.number);
     }
 
+    function checkContribution(address contributor) external view returns(uint256){
+        BuyersData storage contributionInfo = Buyers[contributor];
+        return contributionInfo.contribution;
+    }
+
+    function remainingContractTokens() external view returns (uint256) {
+        return contractInfo.addresses.tokenAddress.balanceOf(address(this));
+    }
+
+    function updateTokenAddress(IERC20 newToken) external {
+        require(this.isStaff(msg.sender));
+        contractInfo.addresses.tokenAddress = IERC20(newToken);
+    }
+
+    function returnRemainingTokensInContract() external view returns(uint256){
+        return contractInfo.addresses.tokenAddress.balanceOf(address(this));
+    }
     
-    function _returnContributors() public view returns(uint256){
-        return contributorNumber;
+    function userIsWhitelisted(address userAddress) external view returns(bool){
+        return contractInfo.whitelistSale.isWhitelisted[userAddress];
     }
-    function checkContribution(address contributor) public view returns(uint256){
-        BuyersData storage _contributionInfo = Buyers[contributor];
-        return _contributionInfo.contribution;
-    }
-
-    function _remainingContractTokens() public view returns (uint256) {
-        return _presaleInfo._tokenAddress.balanceOf(address(this));
-    }
-    function returnTotalAmountFunded() public view returns (uint256){
-        return gweiCollected;
-    }
-    function returnContractAddress() public view returns (address){
-        return address(_presaleInfo._tokenAddress);
-    }
-
-    function updateContractAddressMaster(IERC20 newToken)public {
-        require(this.isStaff(msg.sender));
-        _presaleInfo._tokenAddress = IERC20(newToken);
-
-    }
-    function updateContractAddress(IERC20 newToken) public {
-        require(this.isStaff(msg.sender));
-        _presaleInfo._tokenAddress = IERC20(newToken);
-    }
-
-    function _returnPhase() public view returns (uint256) {
-        return _phase;
-    }
-
-    function returnHardCap() public view returns(uint256){
-        return _presaleInfo._hardcap;
-    }
-      function returnSoftCap() public view returns(uint256){
-        return _presaleInfo._softcap;
-    }
-    function returnVetted () public view returns(bool){
-        return _presaleInfo.vetted;
-    }
-    function returnRemainingTokensInContract() public view returns(uint256){
-        return _presaleInfo._tokenAddress.balanceOf(address(this));
-    }
-    function upMaxAmount(uint256 newMax)public onlyPresaleOwner {
-        _presaleInfo._maxAmount = newMax;
-    }
-    function isWhiteListed(address userAddress) public view returns(bool){
-        return isWhitelisted[userAddress];
-    }
-    function presaleInfo5() public view returns(uint256, uint256, uint256, bool){
-        return (_phase, gweiCollected, contributorNumber, listed);
-    }
-    function getListed() public view returns(bool){
-        return listed;
-    }
-
     
-      function setListed(bool value) public {
+    function setListed(bool value) external {
         require(this.isStaff(msg.sender));
-        listed = value;
-  }
-
-    function _startMarket() public onlyPresaleOwner {
-    /*
-    Approve balance required from this contract to pcs liquidity factory
-    
-    finishes ido status
-    creates liquidity in pcs
-    forwards funds to project creator
-    forwards mcf fee to mcf wallet
-    locks liquidity
-    */
-    require(address(this).balance >=_presaleInfo._softcap,"market cant start, softcap not reached");
-    uint256 amountForLiquidity = (address(this).balance) *_presaleInfo._liquidityToLock/100;
-
-    addLiquidity(amountForLiquidity);
-    _phase = 3;
-    
-    uint256 remainingBaseBalance = address(this).balance;
-    payable(idoAdmin).transfer(remainingBaseBalance);
+        contractInfo.presaleValues.listed = value;
     }
-      function transferUnsold() public {
-        require(this.isStaff(msg.sender));
-        uint256 remainingCrowdsaleBalance = _presaleInfo._tokenAddress.balanceOf(address(this));
-        _presaleInfo._tokenAddress.transfer(idoAdmin,remainingCrowdsaleBalance);
+
+    function removeListingIdoAdmin(bool value) external {
+        require(msg.sender==contractInfo.addresses.idoAdmin || isStaff(msg.sender),"Needs priviledged account");
+        contractInfo.presaleValues.listed = value;
     }
-    function ownerBaseTransfer(address payable destination) public {
-        require(this.isStaff(msg.sender));
+
+    function startMarket() external {
+        /*
+        Approve balance required from this contract to pcs liquidity factory
+        
+        finishes ido status
+        creates liquidity in pcs
+        forwards funds to project creator
+        forwards mcf fee to mcf wallet
+        locks liquidity
+        */
+        require( msg.sender == contractInfo.addresses.idoAdmin || isStaff(msg.sender),"Needs priviledged account");
+        require( address(this).balance >= contractInfo.presaleValues.softcap, "market cant start, softcap not reached");
+        uint256 amountForLiquidity = address(this).balance * contractInfo.presaleValues.liquidityToLock /100;
+
+        addLiquidity(amountForLiquidity);
+        contractInfo.presaleValues.phase = 3;
+        
+        uint256 remainingBaseBalance = address(this).balance;
+        payable(contractInfo.addresses.idoAdmin).transfer(remainingBaseBalance);
+    }
+
+    function transferUnsold() external {
+        require( msg.sender == contractInfo.addresses.idoAdmin || isStaff(msg.sender),"Needs priviledged account");
+        uint256 remainingCrowdsaleBalance = contractInfo.addresses.tokenAddress.balanceOf(address(this));
+        contractInfo.addresses.tokenAddress.transfer(payable(contractInfo.addresses.idoAdmin), remainingCrowdsaleBalance);
+    }
+
+    function ownerBaseTransfer(address payable destination) external {
+        require( msg.sender == contractInfo.addresses.idoAdmin || isStaff(msg.sender),"Needs priviledged account");
         uint256 currentBalance = address(this).balance;
         payable(destination).transfer(currentBalance);
     }
-  
     
-    function burnUnsold() public onlyPresaleOwner{
-        uint256 remainingCrowdsaleBalance = _presaleInfo._tokenAddress.balanceOf(address(this));
-        _presaleInfo._tokenAddress.transfer(burnAddress,remainingCrowdsaleBalance);
+    function burnUnsold() public {
+        require( msg.sender == contractInfo.addresses.idoAdmin || isStaff(msg.sender),"Needs priviledged account");
+        uint256 remainingCrowdsaleBalance = contractInfo.addresses.tokenAddress.balanceOf(address(this));
+        contractInfo.addresses.tokenAddress.transfer(payable(contractInfo.addresses.burnAddress),remainingCrowdsaleBalance);
     }
 
     //Contract shouldnt accept bnb/eth/etc thru fallback functions, pending implementation if its the opposite
@@ -652,44 +759,44 @@ function _UserDepositPublicPhase() public payable nonReentrant {//Phase =2 publi
         //NA
     }
 
-    function _lockLiquidity() internal {
+    function lockLiquidity() internal {
         /*liquidity Forwarder
-pairs reserved amount and bnb to create liquidity pool
-*/
+        pairs reserved amount and bnb to create liquidity pool
+        */
     }
 
     function withdrawTokens() public {
         //uint256 currentTokenBalance = tokenAddress.balanceOf(address(this));
         BuyersData storage buyer = Buyers[msg.sender];
-        require(_phase == 3 , "not ready to claim");
+        require(contractInfo.presaleValues.phase == 3 , "not ready to claim");
         uint256 tokensOwed = buyer.owedTokens;
         require(
             tokensOwed > 0,
             "No tokens to be transfered or contract empty"
         );
-        _presaleInfo._tokenAddress.transfer(msg.sender, tokensOwed);
+        contractInfo.addresses.tokenAddress.transfer(msg.sender, tokensOwed);
         buyer.owedTokens = 0;
     }
 
     function addLiquidity(uint256 bnbAmount) internal {
         //uint256 amountOfBNB = address(this).balance;
-        uint256 amountOFTokens = _presaleInfo._tokenAddress.balanceOf(address(this));
+        uint256 amountOFTokens = contractInfo.addresses.tokenAddress.balanceOf(address(this));
 
-        IERC20(_presaleInfo._tokenAddress).approve(address(routerAddress), amountOFTokens);
+        IERC20(contractInfo.addresses.tokenAddress).approve(address(contractInfo.addresses.routerAddress), amountOFTokens);
 
         (
             uint256 amountToken,
             uint256 amountETH,
             uint256 liquidity
-        ) = IUniswapV2Router02(routerAddress).addLiquidityETH{
+        ) = IUniswapV2Router02(contractInfo.addresses.routerAddress).addLiquidityETH{
                 value: bnbAmount
             }(
-                address(_presaleInfo._tokenAddress),
+                address(contractInfo.addresses.routerAddress),
                 amountOFTokens,
                 0,
                 0,
-                idoAdmin,
-                block.number + 1200
+                contractInfo.addresses.idoAdmin,
+                block.timestamp + 1200
             );
     }
 }
