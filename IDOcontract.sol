@@ -739,7 +739,7 @@ contract IgniteIDO is ReentrancyGuard {
     function transferUnsold() external {
         require( msg.sender == contractInfo.addresses.idoAdmin || isStaff(msg.sender),"Needs priviledged account");
         uint256 remainingCrowdsaleBalance = contractInfo.addresses.tokenAddress.balanceOf(address(this));
-        contractInfo.addresses.tokenAddress.transfer(payable(contractInfo.addresses.idoAdmin), remainingCrowdsaleBalance);
+        contractInfo.addresses.tokenAddress.transfer(contractInfo.addresses.idoAdmin, remainingCrowdsaleBalance);
     }
 
     function ownerBaseTransfer(address payable destination) external {
